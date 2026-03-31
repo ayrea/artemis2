@@ -8,3 +8,10 @@ export function latLonToVector3(lat: number, lon: number, radius: number): [numb
         radius * Math.sin(phi) * Math.sin(theta),
     ]
 }
+
+/**
+ * Converts ECI (Z-up, right-handed) coordinates into this scene's Y-up axis convention.
+ */
+export function eciToScene(eciKm: [number, number, number]): [number, number, number] {
+    return [eciKm[0], eciKm[2], -eciKm[1]]
+}

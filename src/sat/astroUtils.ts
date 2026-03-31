@@ -8,7 +8,9 @@
 const PI = Math.PI
 const TWO_PI = PI * 2.0
 const DEG2RAD = PI / 180.0
+const OBLIQUITY_J2000_RAD = 23.439291 * DEG2RAD
 export const EARTH_RADIUS_KM = 6378.135
+export const MOON_RADIUS_KM = 1737.4
 
 /**
  * Converts a UTC timestamp into a Julian Date number.
@@ -97,6 +99,25 @@ export function eciToGeodetic(
 }
 
 /**
+ * Rotates Ecliptic J2000 coordinates into Equatorial ECI coordinates.
+ *
+ * Horizons state vectors in this project are exported in Ecliptic J2000.
+ * The scene math expects equatorial ECI, so this fixed X-axis rotation is
+ * applied before geodetic conversion.
+ */
+export function eclipticJ2000ToEci(
+  eclipticKm: [number, number, number],
+): [number, number, number] {
+  const [x, y, z] = eclipticKm
+
+  return [
+    x,
+    y * Math.cos(OBLIQUITY_J2000_RAD) - z * Math.sin(OBLIQUITY_J2000_RAD),
+    y * Math.sin(OBLIQUITY_J2000_RAD) + z * Math.cos(OBLIQUITY_J2000_RAD),
+  ]
+}
+
+/**
  * Approximates geocentric Sun position in ECI coordinates.
  *
  * This low-precision Meeus-style model is sufficient for visualization and
@@ -131,4 +152,58 @@ export function sunEciKm(jd: number): [number, number, number] {
   const cd = Math.cos(dec)
 
   return [rKm * cd * Math.cos(ra), rKm * cd * Math.sin(ra), rKm * Math.sin(dec)]
+}
+
+/**
+ * Approximates geocentric Moon position in ECI coordinates.
+ *
+ * Uses a compact Meeus-style model with dominant periodic terms for
+ * ecliptic longitude, latitude, and distance. Accuracy is sufficient for
+ * real-time visualization at Earth/Moon scale.
+ *
+ * @param jd Julian Date timestamp.
+ * @returns Moon ECI vector `[x, y, z]` in kilometers.
+ */
+export function moonEciKm(jd: number): [number, number, number] {
+  const d = jd - 2451545.0
+  const t = d / 36525.0
+
+  const normalizeDeg = (value: number): number => {
+    let normalized = value % 360.0
+    if (normalized < 0) {
+      normalized += 360.0
+    }
+    return normalized
+  }
+
+  const meanLongitudeDeg = normalizeDeg(218.3164477 + 481267.88123421 * t)
+  const meanAnomalyDeg = normalizeDeg(134.9633964 + 477198.8675055 * t)
+  const argumentOfLatitudeDeg = normalizeDeg(93.2720950 + 483202.0175233 * t)
+  const meanElongationDeg = normalizeDeg(297.8501921 + 445267.1114034 * t)
+
+  const lPrime = meanLongitudeDeg * DEG2RAD
+  const mPrime = meanAnomalyDeg * DEG2RAD
+  const f = argumentOfLatitudeDeg * DEG2RAD
+  const dArg = meanElongationDeg * DEG2RAD
+
+  const lambda = lPrime
+    + 6.289 * DEG2RAD * Math.sin(mPrime)
+    + 1.274 * DEG2RAD * Math.sin(2 * dArg - mPrime)
+    + 0.658 * DEG2RAD * Math.sin(2 * dArg)
+    + 0.214 * DEG2RAD * Math.sin(2 * mPrime)
+    + 0.110 * DEG2RAD * Math.sin(dArg)
+  const beta = 5.128 * DEG2RAD * Math.sin(f)
+  const distanceKm = 385000.56 - 20905.0 * Math.cos(mPrime)
+  const epsilon = (23.439291 - 0.0130042 * t) * DEG2RAD
+
+  const cosBeta = Math.cos(beta)
+  const eclipticX = distanceKm * cosBeta * Math.cos(lambda)
+  const eclipticY = distanceKm * cosBeta * Math.sin(lambda)
+  const eclipticZ = distanceKm * Math.sin(beta)
+
+  return [
+    eclipticX,
+    eclipticY * Math.cos(epsilon) - eclipticZ * Math.sin(epsilon),
+    eclipticY * Math.sin(epsilon) + eclipticZ * Math.cos(epsilon),
+  ]
 }
