@@ -1,0 +1,24 @@
+/*
+ * Remove default browser margins so the canvas can fill the viewport without
+ * ad-hoc calc(100vw - Npx) offsets for scrollbar gutters.
+ */
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* react-resizable-panels separators — visual affordance (library sets hit area + cursors) */
+.resize-handle[data-separator] {
+  background: #252525;
+  transition: background 0.12s ease;
+}
+
+.resize-handle[data-separator]:hover,
+.resize-handle[data-separator]:focus-visible {
+  background: #3d3d3d;
+}
