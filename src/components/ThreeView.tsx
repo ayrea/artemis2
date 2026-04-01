@@ -344,8 +344,8 @@ export default function ThreeView() {
           whiteSpace: 'pre',
         }}
       >
-        <p>Artemis II</p>
-        {`${telemetry.timeSinceLaunch}\n${telemetry.earthDistanceText}\n${telemetry.moonDistanceText}`}
+
+        {`Artemis II : ${telemetry.timeSinceLaunch}\nDistance | Velocity\n${telemetry.earthDistanceText}\n${telemetry.moonDistanceText}`}
       </div>
       {SHOW_CAMERA_POSITION && (<div
         style={{
