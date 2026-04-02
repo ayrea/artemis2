@@ -24,7 +24,7 @@ export default function Earth({ currentTime, children }: EarthProps) {
 
   return (
     <group rotation={[EARTH_DISPLAY_TILT_RAD, 0, 0]}>
-      <mesh rotation={[0, -gmstAngle, 0]} scale={[1, POLAR_TO_EQUATOR_RATIO, 1]}>
+      <mesh rotation={[0, gmstAngle, 0]} scale={[1, POLAR_TO_EQUATOR_RATIO, 1]}>
         <sphereGeometry args={[EARTH_RADIUS_KM, 48, 48]} />
         <meshStandardMaterial map={earthTexture} color="#ffffff" emissive="#1a1a1a" emissiveIntensity={0.45} />
         {children}

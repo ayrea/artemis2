@@ -330,7 +330,7 @@ export default function ThreeView() {
           rotateSpeed={ROTATE_SPEED}
           zoomSpeed={ZOOM_SPEED}
           zoomToCursor
-          mouseButtons={{ LEFT: THREE.MOUSE.PAN, RIGHT: THREE.MOUSE.ROTATE }}
+          mouseButtons={{ LEFT: THREE.MOUSE.ROTATE, RIGHT: THREE.MOUSE.PAN }}
           onStart={handleControlsStart}
           onEnd={handleControlsEnd}
         />
