@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Box, Button, ButtonGroup, IconButton, Paper, Slider, Stack, Tooltip, Typography } from '@mui/material'
 import AccessTime from '@mui/icons-material/AccessTime'
 import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown'
@@ -11,6 +11,8 @@ type TimeControlsProps = {
   isPlaying: boolean
   speed: number
   speedPresets: number[]
+  isRealTime: boolean
+  isRealtimeAvailable: boolean
   onPlay: () => void
   onPause: () => void
   onStop: () => void
@@ -20,12 +22,10 @@ type TimeControlsProps = {
   onJumpToEnd: () => void
   onRewindStep: () => void
   onFastForwardStep: () => void
+  onToggleRealTime: () => void
 }
 
 const formatUtc = (date: Date) => date.toUTCString();
-const REALTIME_START = new Date('2026-04-02T01:48:17Z')
-const REALTIME_END = new Date('2026-04-10T23:53:17Z')
-const isWithinRealtimeWindow = (date: Date) => date >= REALTIME_START && date <= REALTIME_END
 
 export default function TimeControls({
   currentTime,
@@ -34,6 +34,8 @@ export default function TimeControls({
   isPlaying,
   speed,
   speedPresets,
+  isRealTime,
+  isRealtimeAvailable,
   onPlay,
   onPause,
   onStop,
@@ -43,35 +45,9 @@ export default function TimeControls({
   onJumpToEnd,
   onRewindStep,
   onFastForwardStep,
+  onToggleRealTime,
 }: TimeControlsProps) {
   const [collapsed, setCollapsed] = useState(false)
-  const [isRealTime, setIsRealTime] = useState(() => isWithinRealtimeWindow(new Date()))
-  const [nowUtc, setNowUtc] = useState(() => new Date())
-  const isRealtimeAvailable = isWithinRealtimeWindow(nowUtc)
-
-  useEffect(() => {
-    const timerId = window.setInterval(() => {
-      const now = new Date()
-      setNowUtc(now)
-      if (isRealTime) {
-        onSeek(now)
-      }
-    }, 1000)
-
-    return () => window.clearInterval(timerId)
-  }, [isRealTime, onSeek])
-
-  useEffect(() => {
-    if (isRealTime) {
-      onStop()
-    }
-  }, [isRealTime, onStop])
-
-  useEffect(() => {
-    if (!isRealtimeAvailable && isRealTime) {
-      setIsRealTime(false)
-    }
-  }, [isRealTime, isRealtimeAvailable])
 
   const minMs = minTime.getTime()
   const maxMs = maxTime.getTime()
@@ -103,7 +79,7 @@ export default function TimeControls({
               <span>
                 <IconButton
                   size="small"
-                  onClick={() => setIsRealTime((prev) => !prev)}
+                  onClick={onToggleRealTime}
                   disabled={!isRealtimeAvailable}
                   sx={{ color: isRealTime ? '#00ff00' : '#404040' }}
                   aria-label={isRealTime ? 'Disable real-time mode' : 'Enable real-time mode'}

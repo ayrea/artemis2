@@ -146,6 +146,8 @@ export default function ThreeView() {
     isPlaying,
     speed,
     speedPresets,
+    isRealTime,
+    isRealtimeAvailable,
     play,
     pause,
     setSpeed,
@@ -154,7 +156,13 @@ export default function ThreeView() {
     jumpToEnd,
     rewindStep,
     fastForwardStep,
+    toggleRealTime,
   } = useVirtualClock()
+
+  const handleStop = useCallback(() => {
+    pause()
+    jumpToStart()
+  }, [pause, jumpToStart])
 
   const handleCameraPositionChange = useCallback((nextPosition: CameraPosition) => {
     setCameraPosition((previousPosition) => {
@@ -374,18 +382,18 @@ export default function ThreeView() {
         isPlaying={isPlaying}
         speed={speed}
         speedPresets={speedPresets}
+        isRealTime={isRealTime}
+        isRealtimeAvailable={isRealtimeAvailable}
         onPlay={play}
         onPause={pause}
-        onStop={() => {
-          pause()
-          jumpToStart()
-        }}
+        onStop={handleStop}
         onSetSpeed={setSpeed}
         onSeek={seek}
         onJumpToStart={jumpToStart}
         onJumpToEnd={jumpToEnd}
         onRewindStep={rewindStep}
         onFastForwardStep={fastForwardStep}
+        onToggleRealTime={toggleRealTime}
       />
     </div>
   )
