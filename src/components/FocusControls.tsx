@@ -82,7 +82,7 @@ export default function FocusControls({ onFocus }: FocusControlsProps) {
         <DialogContent>
           <DialogContentText>
             <p>Real-time position of NASA's <b>Artemis II</b> based on data from <a href="https://ssd.jpl.nasa.gov/horizons" target="_blank">JPL Horizons system</a>.</p>
-            <p>This simulation assumes a launch date on 1-APR-2026 at 22:24:00 UTC.</p>
+            <p>Note: The mission clock may not be 100% accurate, but it should be correct to within a few minutes.</p>
             <p>Controls:</p>
             <ul>
               <li>

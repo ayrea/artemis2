@@ -81,7 +81,7 @@ export const DATA_END = HORIZONS_ENTRIES.length > 0
   ? jdToDate(HORIZONS_ENTRIES[HORIZONS_ENTRIES.length - 1].jd)
   : null
 
-export const MISSION_LAUNCH_UTC = new Date('2026-04-01T22:24:00Z')
+export const MISSION_LAUNCH_UTC = new Date('2026-04-01T22:35:12Z')
 
 export function findClosestEntryIndex(targetJd: number): number {
   if (HORIZONS_ENTRIES.length === 0) return -1
