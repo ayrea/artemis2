@@ -1,6 +1,6 @@
 import { OrbitControls } from '@react-three/drei'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react'
+import { Canvas } from '@react-three/fiber'
+import { Suspense, useCallback, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import Earth, { EARTH_DISPLAY_TILT_RAD } from './Earth'
@@ -9,7 +9,10 @@ import Spacecraft from './Spacecraft'
 import SpacecraftLine from './SpacecraftLine'
 import TimeControls from './TimeControls'
 import FocusControls, { type FocusTarget } from './FocusControls'
-import { eclipticJ2000ToEci, EARTH_RADIUS_KM, moonEciKm, MOON_RADIUS_KM, sunEciKm, toJulianDate } from '../sat/astroUtils'
+import Invalidator from './Invalidator'
+import SatelliteTracker from './SatelliteTracker'
+import CameraPositionReporter, { CAMERA_POSITION_EPSILON_KM, type CameraPosition } from './CameraPositionReporter'
+import { eclipticJ2000ToEci, EARTH_RADIUS_KM, moonEciKm, MOON_RADIUS_KM, toJulianDate } from '../sat/astroUtils'
 import { useVirtualClock } from '../hooks/useVirtualClock'
 import { HORIZONS_ENTRIES, interpolateEntry, MISSION_LAUNCH_UTC } from '../horizonsParser'
 import { eciToScene } from '../utils/3d'
@@ -27,19 +30,9 @@ const DAMPING_FACTOR = 0.08
 const CAMERA_NEAR_KM = 10
 // Must exceed worst-case camera-to-moon distance when the moon is on the far side of Earth.
 const CAMERA_FAR_KM = 1200000
-const CAMERA_POSITION_EPSILON_KM = 0.1
 
 const SHOW_CAMERA_POSITION = false
 
-type SatelliteTrackerProps = {
-  lightRef: RefObject<THREE.DirectionalLight | null>
-  currentTime: Date
-}
-type CameraPosition = {
-  x: number
-  y: number
-  z: number
-}
 type TelemetryDisplay = {
   timeSinceLaunch: string
   earthDistanceText: string
@@ -56,72 +49,6 @@ function formatElapsedTime(elapsedMs: number): string {
   const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0')
   const seconds = String(totalSeconds % 60).padStart(2, '0')
   return `T+ ${hours}:${minutes}:${seconds}`
-}
-
-function Invalidator({ currentTime }: { currentTime: Date }) {
-  const { invalidate } = useThree()
-
-  useEffect(() => {
-    invalidate()
-  }, [currentTime, invalidate])
-
-  return null
-}
-
-/** Positions sunlight using the virtual mission timestamp. */
-function SatelliteTracker({ lightRef, currentTime }: SatelliteTrackerProps) {
-  const tiltedVector = useRef(new THREE.Vector3())
-  const tiltEuler = useRef(new THREE.Euler(EARTH_DISPLAY_TILT_RAD, 0, 0, 'XYZ'))
-  const timeRef = useRef(currentTime)
-
-  useEffect(() => {
-    timeRef.current = currentTime
-  }, [currentTime])
-
-  useFrame(() => {
-    const julianDate = toJulianDate(timeRef.current)
-    const applyDisplayTilt = (x: number, y: number, z: number) => {
-      tiltedVector.current.set(x, y, z).applyEuler(tiltEuler.current)
-      return tiltedVector.current
-    }
-
-    if (lightRef.current !== null) {
-      const sunEciPosition = sunEciKm(julianDate)
-      const [lx, ly, lz] = eciToScene(sunEciPosition)
-      const tiltedLightPosition = applyDisplayTilt(lx, ly, lz)
-      lightRef.current.position.copy(tiltedLightPosition)
-    }
-  })
-
-  return null
-}
-
-function CameraPositionReporter({
-  onPositionChange,
-}: {
-  onPositionChange: (position: CameraPosition) => void
-}) {
-  const { camera } = useThree()
-  const lastReportedPositionRef = useRef(new THREE.Vector3(Number.NaN, Number.NaN, Number.NaN))
-
-  useFrame(() => {
-    const currentPosition = camera.position
-    if (
-      currentPosition.distanceToSquared(lastReportedPositionRef.current) <=
-      CAMERA_POSITION_EPSILON_KM * CAMERA_POSITION_EPSILON_KM
-    ) {
-      return
-    }
-
-    lastReportedPositionRef.current.copy(currentPosition)
-    onPositionChange({
-      x: currentPosition.x,
-      y: currentPosition.y,
-      z: currentPosition.z,
-    })
-  })
-
-  return null
 }
 
 export default function ThreeView() {
