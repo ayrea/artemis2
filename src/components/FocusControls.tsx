@@ -1,15 +1,32 @@
-import { InfoOutlined, NightlightRound, Public, RocketLaunch } from '@mui/icons-material'
-import { Box, Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Paper, Tooltip } from '@mui/material'
-import { useState } from 'react'
+import {
+  InfoOutlined,
+  NightlightRound,
+  Public,
+  RocketLaunch,
+} from '@mui/icons-material';
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  IconButton,
+  Paper,
+  Tooltip,
+} from '@mui/material';
+import { useState } from 'react';
 
-export type FocusTarget = 'earth' | 'moon' | 'spacecraft'
+export type FocusTarget = 'earth' | 'moon' | 'spacecraft';
 
 type FocusControlsProps = {
-  onFocus: (target: FocusTarget) => void
-}
+  onFocus: (target: FocusTarget) => void;
+};
 
 export default function FocusControls({ onFocus }: FocusControlsProps) {
-  const [isInfoOpen, setIsInfoOpen] = useState(false)
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   return (
     <>
@@ -43,17 +60,26 @@ export default function FocusControls({ onFocus }: FocusControlsProps) {
             }}
           >
             <Tooltip title="Centre on Earth" arrow>
-              <Button aria-label="Centre on Earth" onClick={() => onFocus('earth')}>
+              <Button
+                aria-label="Centre on Earth"
+                onClick={() => onFocus('earth')}
+              >
                 <Public fontSize="small" />
               </Button>
             </Tooltip>
             <Tooltip title="Centre on Moon" arrow>
-              <Button aria-label="Centre on Moon" onClick={() => onFocus('moon')}>
+              <Button
+                aria-label="Centre on Moon"
+                onClick={() => onFocus('moon')}
+              >
                 <NightlightRound fontSize="small" />
               </Button>
             </Tooltip>
             <Tooltip title="Centre on Artemis II" arrow>
-              <Button aria-label="Centre on Artemis II" onClick={() => onFocus('spacecraft')}>
+              <Button
+                aria-label="Centre on Artemis II"
+                onClick={() => onFocus('spacecraft')}
+              >
                 <RocketLaunch fontSize="small" />
               </Button>
             </Tooltip>
@@ -81,24 +107,34 @@ export default function FocusControls({ onFocus }: FocusControlsProps) {
         <DialogTitle>About</DialogTitle>
         <DialogContent>
           <DialogContentText component="div">
-            <p>Real-time position of NASA's <b>Artemis II</b> based on data from <a href="https://ssd.jpl.nasa.gov/horizons" target="_blank">JPL Horizons system</a>.</p>
-            <p>Note: The mission clock may not be 100% accurate, but it should be correct to within a few minutes.</p>
+            <p>
+              Real-time position of NASA's <b>Artemis II</b> based on data from{' '}
+              <a href="https://ssd.jpl.nasa.gov/horizons" target="_blank">
+                JPL Horizons system
+              </a>
+              .
+            </p>
+            <p>
+              Note: The mission clock may not be 100% accurate, but it should be
+              correct to within a few minutes.
+            </p>
             <p>Controls:</p>
             <ul>
-              <li>
-                Left-click & drag to rotate.
-              </li>
-              <li>
-                Right-click & drag to pan.
-              </li>
+              <li>Left-click & drag to rotate.</li>
+              <li>Right-click & drag to pan.</li>
             </ul>
-            <p>Source code: <a href="https://github.com/ayrea/artemis2" target="_blank">https://github.com/ayrea/artemis2</a></p>
+            <p>
+              Source code:{' '}
+              <a href="https://github.com/ayrea/artemis2" target="_blank">
+                https://github.com/ayrea/artemis2
+              </a>
+            </p>
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setIsInfoOpen(false)}>Close</Button>
         </DialogActions>
-      </Dialog >
+      </Dialog>
     </>
-  )
+  );
 }

@@ -1,16 +1,16 @@
-import { useThree } from '@react-three/fiber'
-import { useEffect } from 'react'
+import { useThree } from '@react-three/fiber';
+import { useEffect } from 'react';
 
 type InvalidatorProps = {
-  currentTime: Date
-}
+  currentTime: Date;
+};
 
 export default function Invalidator({ currentTime }: InvalidatorProps) {
-  const { invalidate } = useThree()
+  const { invalidate } = useThree();
 
   useEffect(() => {
-    invalidate()
-  }, [currentTime, invalidate])
+    invalidate();
+  }, [currentTime, invalidate]);
 
-  return null
+  return null;
 }

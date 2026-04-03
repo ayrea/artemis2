@@ -1,104 +1,106 @@
-import rawHorizonsData from '../data/horizons_results.txt?raw'
+import rawHorizonsData from '../data/horizons_results.txt?raw';
 
 export type HorizonsEntry = {
-  jd: number
-  x: number
-  y: number
-  z: number
-  vx: number
-  vy: number
-  vz: number
-}
+  jd: number;
+  x: number;
+  y: number;
+  z: number;
+  vx: number;
+  vy: number;
+  vz: number;
+};
 
-const JD_LINE_REGEX = /^\s*([0-9]+\.[0-9]+)\s*=/
-const XYZ_LINE_REGEX = /^\s*X\s*=\s*([+-]?[0-9.]+E[+-][0-9]+)\s+Y\s*=\s*([+-]?[0-9.]+E[+-][0-9]+)\s+Z\s*=\s*([+-]?[0-9.]+E[+-][0-9]+)\s*$/
-const VXYZ_LINE_REGEX = /^\s*VX\s*=\s*([+-]?[0-9.]+E[+-][0-9]+)\s+VY\s*=\s*([+-]?[0-9.]+E[+-][0-9]+)\s+VZ\s*=\s*([+-]?[0-9.]+E[+-][0-9]+)\s*$/
+const JD_LINE_REGEX = /^\s*([0-9]+\.[0-9]+)\s*=/;
+const XYZ_LINE_REGEX =
+  /^\s*X\s*=\s*([+-]?[0-9.]+E[+-][0-9]+)\s+Y\s*=\s*([+-]?[0-9.]+E[+-][0-9]+)\s+Z\s*=\s*([+-]?[0-9.]+E[+-][0-9]+)\s*$/;
+const VXYZ_LINE_REGEX =
+  /^\s*VX\s*=\s*([+-]?[0-9.]+E[+-][0-9]+)\s+VY\s*=\s*([+-]?[0-9.]+E[+-][0-9]+)\s+VZ\s*=\s*([+-]?[0-9.]+E[+-][0-9]+)\s*$/;
 
 function parseHorizonsEntries(rawData: string): HorizonsEntry[] {
-  const lines = rawData.split(/\r?\n/)
-  const entries: HorizonsEntry[] = []
+  const lines = rawData.split(/\r?\n/);
+  const entries: HorizonsEntry[] = [];
 
-  let isInEphemeris = false
+  let isInEphemeris = false;
 
   for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index]
+    const line = lines[index];
 
     if (!isInEphemeris) {
       if (line.trim() === '$$SOE') {
-        isInEphemeris = true
+        isInEphemeris = true;
       }
-      continue
+      continue;
     }
 
     if (line.trim() === '$$EOE') {
-      break
+      break;
     }
 
-    const jdMatch = line.match(JD_LINE_REGEX)
-    if (jdMatch === null) continue
+    const jdMatch = line.match(JD_LINE_REGEX);
+    if (jdMatch === null) continue;
 
-    const xyzLine = lines[index + 1]
-    if (xyzLine === undefined) break
-    const vxyzLine = lines[index + 2]
-    if (vxyzLine === undefined) break
+    const xyzLine = lines[index + 1];
+    if (xyzLine === undefined) break;
+    const vxyzLine = lines[index + 2];
+    if (vxyzLine === undefined) break;
 
-    const xyzMatch = xyzLine.match(XYZ_LINE_REGEX)
-    if (xyzMatch === null) continue
-    const vxyzMatch = vxyzLine.match(VXYZ_LINE_REGEX)
-    if (vxyzMatch === null) continue
+    const xyzMatch = xyzLine.match(XYZ_LINE_REGEX);
+    if (xyzMatch === null) continue;
+    const vxyzMatch = vxyzLine.match(VXYZ_LINE_REGEX);
+    if (vxyzMatch === null) continue;
 
-    const jd = Number.parseFloat(jdMatch[1])
-    const x = Number.parseFloat(xyzMatch[1])
-    const y = Number.parseFloat(xyzMatch[2])
-    const z = Number.parseFloat(xyzMatch[3])
-    const vx = Number.parseFloat(vxyzMatch[1])
-    const vy = Number.parseFloat(vxyzMatch[2])
-    const vz = Number.parseFloat(vxyzMatch[3])
+    const jd = Number.parseFloat(jdMatch[1]);
+    const x = Number.parseFloat(xyzMatch[1]);
+    const y = Number.parseFloat(xyzMatch[2]);
+    const z = Number.parseFloat(xyzMatch[3]);
+    const vx = Number.parseFloat(vxyzMatch[1]);
+    const vy = Number.parseFloat(vxyzMatch[2]);
+    const vz = Number.parseFloat(vxyzMatch[3]);
 
     if ([jd, x, y, z, vx, vy, vz].every(Number.isFinite)) {
-      entries.push({ jd, x, y, z, vx, vy, vz })
+      entries.push({ jd, x, y, z, vx, vy, vz });
     }
   }
 
-  return entries
+  return entries;
 }
 
-export const HORIZONS_ENTRIES = parseHorizonsEntries(rawHorizonsData)
+export const HORIZONS_ENTRIES = parseHorizonsEntries(rawHorizonsData);
 
-const UNIX_EPOCH_JD = 2440587.5
-const MS_PER_DAY = 86400000
+const UNIX_EPOCH_JD = 2440587.5;
+const MS_PER_DAY = 86400000;
 
 function jdToDate(jd: number): Date {
-  return new Date((jd - UNIX_EPOCH_JD) * MS_PER_DAY)
+  return new Date((jd - UNIX_EPOCH_JD) * MS_PER_DAY);
 }
 
-export const DATA_START = HORIZONS_ENTRIES.length > 0
-  ? jdToDate(HORIZONS_ENTRIES[0].jd)
-  : null
+export const DATA_START =
+  HORIZONS_ENTRIES.length > 0 ? jdToDate(HORIZONS_ENTRIES[0].jd) : null;
 
-export const DATA_END = HORIZONS_ENTRIES.length > 0
-  ? jdToDate(HORIZONS_ENTRIES[HORIZONS_ENTRIES.length - 1].jd)
-  : null
+export const DATA_END =
+  HORIZONS_ENTRIES.length > 0
+    ? jdToDate(HORIZONS_ENTRIES[HORIZONS_ENTRIES.length - 1].jd)
+    : null;
 
-export const MISSION_LAUNCH_UTC = new Date('2026-04-01T22:35:12Z')
+export const MISSION_LAUNCH_UTC = new Date('2026-04-01T22:35:12Z');
 
 /** Largest index i such that HORIZONS_ENTRIES[i].jd <= targetJd, or -1 if none. */
 export function findLastEntryIndexLeq(targetJd: number): number {
-  if (HORIZONS_ENTRIES.length === 0) return -1
+  if (HORIZONS_ENTRIES.length === 0) return -1;
 
-  let left = 0
-  let right = HORIZONS_ENTRIES.length - 1
+  let left = 0;
+  let right = HORIZONS_ENTRIES.length - 1;
 
   while (left <= right) {
-    const mid = Math.floor((left + right) / 2)
+    const mid = Math.floor((left + right) / 2);
     if (HORIZONS_ENTRIES[mid].jd <= targetJd) {
-      left = mid + 1
+      left = mid + 1;
     } else {
-      right = mid - 1
+      right = mid - 1;
     }
   }
 
-  return right
+  return right;
 }
 
 /**
@@ -106,37 +108,37 @@ export function findLastEntryIndexLeq(targetJd: number): number {
  * between 1-minute ephemeris steps.
  */
 export function interpolateEntry(targetJd: number): HorizonsEntry | null {
-  if (HORIZONS_ENTRIES.length === 0) return null
+  if (HORIZONS_ENTRIES.length === 0) return null;
 
-  const first = HORIZONS_ENTRIES[0]
-  const last = HORIZONS_ENTRIES[HORIZONS_ENTRIES.length - 1]
+  const first = HORIZONS_ENTRIES[0];
+  const last = HORIZONS_ENTRIES[HORIZONS_ENTRIES.length - 1];
 
   if (targetJd <= first.jd) {
-    return { ...first, jd: targetJd }
+    return { ...first, jd: targetJd };
   }
   if (targetJd >= last.jd) {
-    return { ...last, jd: targetJd }
+    return { ...last, jd: targetJd };
   }
 
-  let left = 0
-  let right = HORIZONS_ENTRIES.length - 1
+  let left = 0;
+  let right = HORIZONS_ENTRIES.length - 1;
 
   while (left < right) {
-    const mid = Math.floor((left + right) / 2)
+    const mid = Math.floor((left + right) / 2);
     if (HORIZONS_ENTRIES[mid].jd < targetJd) {
-      left = mid + 1
+      left = mid + 1;
     } else {
-      right = mid
+      right = mid;
     }
   }
 
-  const hi = left
-  const lo = hi - 1
-  const a = HORIZONS_ENTRIES[lo]
-  const b = HORIZONS_ENTRIES[hi]
-  const span = b.jd - a.jd
-  const t = span > 0 ? (targetJd - a.jd) / span : 0
-  const u = 1 - t
+  const hi = left;
+  const lo = hi - 1;
+  const a = HORIZONS_ENTRIES[lo];
+  const b = HORIZONS_ENTRIES[hi];
+  const span = b.jd - a.jd;
+  const t = span > 0 ? (targetJd - a.jd) / span : 0;
+  const u = 1 - t;
 
   return {
     jd: targetJd,
@@ -146,5 +148,5 @@ export function interpolateEntry(targetJd: number): HorizonsEntry | null {
     vx: u * a.vx + t * b.vx,
     vy: u * a.vy + t * b.vy,
     vz: u * a.vz + t * b.vz,
-  }
+  };
 }
