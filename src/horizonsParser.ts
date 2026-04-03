@@ -1,5 +1,4 @@
 import rawHorizonsData from '../data/horizons_results.txt?raw'
-import { toJulianDate } from './sat/astroUtils'
 
 export type HorizonsEntry = {
   jd: number
@@ -69,7 +68,7 @@ export const HORIZONS_ENTRIES = parseHorizonsEntries(rawHorizonsData)
 const UNIX_EPOCH_JD = 2440587.5
 const MS_PER_DAY = 86400000
 
-export function jdToDate(jd: number): Date {
+function jdToDate(jd: number): Date {
   return new Date((jd - UNIX_EPOCH_JD) * MS_PER_DAY)
 }
 
@@ -82,33 +81,6 @@ export const DATA_END = HORIZONS_ENTRIES.length > 0
   : null
 
 export const MISSION_LAUNCH_UTC = new Date('2026-04-01T22:35:12Z')
-
-export function findClosestEntryIndex(targetJd: number): number {
-  if (HORIZONS_ENTRIES.length === 0) return -1
-
-  let left = 0
-  let right = HORIZONS_ENTRIES.length - 1
-
-  while (left <= right) {
-    const mid = Math.floor((left + right) / 2)
-    const midJd = HORIZONS_ENTRIES[mid].jd
-
-    if (midJd < targetJd) {
-      left = mid + 1
-    } else if (midJd > targetJd) {
-      right = mid - 1
-    } else {
-      return mid
-    }
-  }
-
-  if (left >= HORIZONS_ENTRIES.length) return HORIZONS_ENTRIES.length - 1
-  if (right < 0) return 0
-
-  const leftDiff = Math.abs(HORIZONS_ENTRIES[left].jd - targetJd)
-  const rightDiff = Math.abs(HORIZONS_ENTRIES[right].jd - targetJd)
-  return leftDiff < rightDiff ? left : right
-}
 
 /** Largest index i such that HORIZONS_ENTRIES[i].jd <= targetJd, or -1 if none. */
 export function findLastEntryIndexLeq(targetJd: number): number {
@@ -175,11 +147,4 @@ export function interpolateEntry(targetJd: number): HorizonsEntry | null {
     vy: u * a.vy + t * b.vy,
     vz: u * a.vz + t * b.vz,
   }
-}
-
-export function getEntryAtUtc(date: Date): HorizonsEntry | null {
-  if (HORIZONS_ENTRIES.length === 0) return null
-
-  const index = findClosestEntryIndex(toJulianDate(date))
-  return index >= 0 ? HORIZONS_ENTRIES[index] : null
 }
