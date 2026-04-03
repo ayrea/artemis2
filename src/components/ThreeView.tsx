@@ -11,7 +11,7 @@ import TimeControls from './TimeControls'
 import FocusControls, { type FocusTarget } from './FocusControls'
 import { eclipticJ2000ToEci, EARTH_RADIUS_KM, moonEciKm, MOON_RADIUS_KM, sunEciKm, toJulianDate } from '../sat/astroUtils'
 import { useVirtualClock } from '../hooks/useVirtualClock'
-import { findClosestEntryIndex, HORIZONS_ENTRIES, MISSION_LAUNCH_UTC } from '../horizonsParser'
+import { HORIZONS_ENTRIES, interpolateEntry, MISSION_LAUNCH_UTC } from '../horizonsParser'
 import { eciToScene } from '../utils/3d'
 
 const INITIAL_CAMERA_POSITION: [number, number, number] = [-110275, -207586, 366634]
@@ -209,9 +209,8 @@ export default function ThreeView() {
       const [x, y, z] = eciToScene(moonEciKm(julianDate))
       targetPosition = new THREE.Vector3(x, y, z).applyEuler(focusTiltEuler)
     } else if (target === 'spacecraft') {
-      const entryIndex = findClosestEntryIndex(julianDate)
-      if (entryIndex < 0 || HORIZONS_ENTRIES.length === 0) return
-      const entry = HORIZONS_ENTRIES[entryIndex]
+      const entry = interpolateEntry(julianDate)
+      if (entry === null || HORIZONS_ENTRIES.length === 0) return
       const spacecraftEci = eclipticJ2000ToEci([entry.x, entry.y, entry.z])
       const [x, y, z] = eciToScene(spacecraftEci)
       targetPosition = new THREE.Vector3(x, y, z).applyEuler(focusTiltEuler)
@@ -228,16 +227,14 @@ export default function ThreeView() {
 
   const telemetry = useMemo<TelemetryDisplay>(() => {
     const timeSinceLaunch = formatElapsedTime(currentTime.getTime() - MISSION_LAUNCH_UTC.getTime())
-    const entryIndex = findClosestEntryIndex(toJulianDate(currentTime))
-    if (entryIndex < 0 || HORIZONS_ENTRIES.length === 0) {
+    const entry = interpolateEntry(toJulianDate(currentTime))
+    if (entry === null || HORIZONS_ENTRIES.length === 0) {
       return {
         timeSinceLaunch,
         earthDistanceText: 'Earth: -- km | -- km/s',
         moonDistanceText: 'Moon: -- km | -- km/s',
       }
     }
-
-    const entry = HORIZONS_ENTRIES[entryIndex]
     const earthSurfaceDistanceKm = magnitude3(entry.x, entry.y, entry.z) - EARTH_RADIUS_KM
     const earthRelativeSpeedKmS = magnitude3(entry.vx, entry.vy, entry.vz)
 

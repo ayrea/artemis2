@@ -110,6 +110,73 @@ export function findClosestEntryIndex(targetJd: number): number {
   return leftDiff < rightDiff ? left : right
 }
 
+/** Largest index i such that HORIZONS_ENTRIES[i].jd <= targetJd, or -1 if none. */
+export function findLastEntryIndexLeq(targetJd: number): number {
+  if (HORIZONS_ENTRIES.length === 0) return -1
+
+  let left = 0
+  let right = HORIZONS_ENTRIES.length - 1
+
+  while (left <= right) {
+    const mid = Math.floor((left + right) / 2)
+    if (HORIZONS_ENTRIES[mid].jd <= targetJd) {
+      left = mid + 1
+    } else {
+      right = mid - 1
+    }
+  }
+
+  return right
+}
+
+/**
+ * Linearly interpolates position and velocity between Horizons samples for smooth motion
+ * between 1-minute ephemeris steps.
+ */
+export function interpolateEntry(targetJd: number): HorizonsEntry | null {
+  if (HORIZONS_ENTRIES.length === 0) return null
+
+  const first = HORIZONS_ENTRIES[0]
+  const last = HORIZONS_ENTRIES[HORIZONS_ENTRIES.length - 1]
+
+  if (targetJd <= first.jd) {
+    return { ...first, jd: targetJd }
+  }
+  if (targetJd >= last.jd) {
+    return { ...last, jd: targetJd }
+  }
+
+  let left = 0
+  let right = HORIZONS_ENTRIES.length - 1
+
+  while (left < right) {
+    const mid = Math.floor((left + right) / 2)
+    if (HORIZONS_ENTRIES[mid].jd < targetJd) {
+      left = mid + 1
+    } else {
+      right = mid
+    }
+  }
+
+  const hi = left
+  const lo = hi - 1
+  const a = HORIZONS_ENTRIES[lo]
+  const b = HORIZONS_ENTRIES[hi]
+  const span = b.jd - a.jd
+  const t = span > 0 ? (targetJd - a.jd) / span : 0
+  const u = 1 - t
+
+  return {
+    jd: targetJd,
+    x: u * a.x + t * b.x,
+    y: u * a.y + t * b.y,
+    z: u * a.z + t * b.z,
+    vx: u * a.vx + t * b.vx,
+    vy: u * a.vy + t * b.vy,
+    vz: u * a.vz + t * b.vz,
+  }
+}
+
 export function getEntryAtUtc(date: Date): HorizonsEntry | null {
   if (HORIZONS_ENTRIES.length === 0) return null
 

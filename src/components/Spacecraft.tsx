@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import * as THREE from 'three'
-import { findClosestEntryIndex, HORIZONS_ENTRIES } from '../horizonsParser'
+import { interpolateEntry } from '../horizonsParser'
 import {
   eclipticJ2000ToEci,
   toJulianDate,
@@ -24,9 +24,8 @@ type SpacecraftProps = {
 
 export default function Spacecraft({ currentTime }: SpacecraftProps) {
   const position = useMemo<[number, number, number] | null>(() => {
-    const entryIndex = findClosestEntryIndex(toJulianDate(currentTime))
-    if (entryIndex < 0) return null
-    const entry = HORIZONS_ENTRIES[entryIndex]
+    const entry = interpolateEntry(toJulianDate(currentTime))
+    if (entry === null) return null
 
     const eci = eclipticJ2000ToEci([entry.x, entry.y, entry.z])
     const [x, y, z] = eciToScene(eci)
