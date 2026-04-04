@@ -109,7 +109,11 @@ export default function FocusControls({ onFocus }: FocusControlsProps) {
           <DialogContentText component="div">
             <p>
               Real-time position of NASA's <b>Artemis II</b> based on data from{' '}
-              <a href="https://ssd.jpl.nasa.gov/horizons" target="_blank">
+              <a
+                href="https://ssd.jpl.nasa.gov/horizons"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 JPL Horizons system
               </a>
               .
@@ -125,7 +129,11 @@ export default function FocusControls({ onFocus }: FocusControlsProps) {
             </ul>
             <p>
               Source code:{' '}
-              <a href="https://github.com/ayrea/artemis2" target="_blank">
+              <a
+                href="https://github.com/ayrea/artemis2"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 https://github.com/ayrea/artemis2
               </a>
             </p>
