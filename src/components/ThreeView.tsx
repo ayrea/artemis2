@@ -63,7 +63,7 @@ function magnitude3(x: number, y: number, z: number): number {
 function formatElapsedTime(elapsedMs: number): string {
   const totalSeconds = Math.max(0, Math.floor(elapsedMs / 1000));
   const totalDays = Math.floor(totalSeconds / 86400);
-  const hours = String(Math.floor((totalSeconds % 3600) / 24)).padStart(2, '0');
+  const hours = String(Math.floor((totalSeconds % 86400) / 3600)).padStart(2, '0');
   const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(
     2,
     '0',
